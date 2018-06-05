@@ -9,6 +9,17 @@ public class MyFCMClass extends FirebaseMessagingService {
    private final String TAG = "JSA-FCM";
 
    @Override
+   public void onMessageSent(String msgId) {
+      Log.e(TAG, "onMessageSent: " + msgId);
+   }
+
+   @Override
+   public void onSendError(String msgId, Exception e) {
+      Log.e(TAG, "onSendError: " + msgId);
+      Log.e(TAG, "Exception: " + e);
+   }
+
+   /*@Override
    public void onMessageReceived(RemoteMessage remoteMessage) {
       if (remoteMessage.getNotification() != null) {
          Log.e(TAG, "Title: " + remoteMessage.getNotification().getTitle());
@@ -18,5 +29,5 @@ public class MyFCMClass extends FirebaseMessagingService {
       if (remoteMessage.getData().size() > 0) {
          Log.e(TAG, "Data: " + remoteMessage.getData());
       }
-   }
+   }*/
 }
