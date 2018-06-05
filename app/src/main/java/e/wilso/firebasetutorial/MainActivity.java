@@ -37,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             break;
          case 1:
-
+            Intent intent1 = new Intent(MainActivity.this, AuthenticationActivity.class);
+            startActivity(intent1);
             break;
          case 2:
 

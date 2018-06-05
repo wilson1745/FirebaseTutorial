@@ -16,8 +16,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".Cloud_MessagingActivity"></activity>
+        <activity android:name=".Cloud_MessagingActivity" />
 
         <!-- Firebase Service -->
         <service android:name=".MyFCMClass">
@@ -26,6 +25,7 @@
             </intent-filter>
         </service>
 
+        <activity android:name=".AuthenticationActivity"></activity>
     </application>
 
 </manifest>
