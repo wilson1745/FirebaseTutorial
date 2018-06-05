@@ -10,7 +10,6 @@ public class MyFCMClass extends FirebaseMessagingService {
 
    @Override
    public void onMessageReceived(RemoteMessage remoteMessage) {
-
       if (remoteMessage.getNotification() != null) {
          Log.e(TAG, "Title: " + remoteMessage.getNotification().getTitle());
          Log.e(TAG, "Body: " + remoteMessage.getNotification().getBody());
