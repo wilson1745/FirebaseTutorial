@@ -25,7 +25,8 @@
             </intent-filter>
         </service>
 
-        <activity android:name=".AuthenticationActivity"></activity>
+        <activity android:name=".AuthenticationActivity" />
+        <activity android:name=".ResetPasswordActivity"></activity>
     </application>
 
 </manifest>

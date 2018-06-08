@@ -1,15 +1,19 @@
 package e.wilso.firebasetutorial;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,7 +31,8 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
    private TextView txtDetail;
    private EditText edtEmail;
    private EditText edtPassword;
-   private Button btnsignin, btnsignout, btncreateaccount, btnverify;
+   private Button btnsignin, btnsignout, btncreateaccount, btnverify, btnforpass;
+   private LinearLayout layout_email_password, layout_emailpass_fields, layout_signin;
 
    private FirebaseAuth mAuth;
 
@@ -49,6 +54,7 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       btnsignout.setOnClickListener(this);
       btncreateaccount.setOnClickListener(this);
       btnverify.setOnClickListener(this);
+      btnforpass.setOnClickListener(this);
 
       mAuth = FirebaseAuth.getInstance();
    }
@@ -63,6 +69,12 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       btnsignout = findViewById(R.id.btn_sign_out);
       btncreateaccount = findViewById(R.id.btn_email_create_account);
       btnverify = findViewById(R.id.btn_verify_email);
+
+      btnforpass = findViewById(R.id.btn_forgot_password);
+
+      layout_email_password = findViewById(R.id.email_password_buttons);
+      layout_emailpass_fields = findViewById(R.id.email_password_fields);
+      layout_signin = findViewById(R.id.layout_signed_in_buttons);
    }
 
    @Override
@@ -81,7 +93,10 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       else if(i == btnverify.getId()) {
          sendEmailVerification();
       }
-
+      else if(i == btnforpass.getId()) {
+         startActivity(new Intent(AuthenticationActivity.this, ResetPasswordActivity.class));
+      }
+      Log.d(TAG, "i: " + i);
    }
 
    private void signIn(String email, String password) {
@@ -174,11 +189,17 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
          txtStatus.setText("User Email" + user.getEmail() + "(verified: " + user.isEmailVerified() + ")");
          txtDetail.setText("Firebase User ID: " + user.getUid());
 
-         findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
-         findViewById(R.id.email_password_fields).setVisibility(View.GONE);
-         findViewById(R.id.layout_signed_in_buttons).setVisibility(View.VISIBLE);
+         //findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
+         //findViewById(R.id.email_password_fields).setVisibility(View.GONE);
+         //findViewById(R.id.layout_signed_in_buttons).setVisibility(View.VISIBLE);
 
-         findViewById(R.id.btn_verify_email).setEnabled(!user.isEmailVerified());
+         layout_email_password.setVisibility(View.GONE);
+         layout_emailpass_fields.setVisibility(View.GONE);
+         layout_signin.setVisibility(View.VISIBLE);
+
+         btnverify.setEnabled(!user.isEmailVerified());
+
+         btnforpass.setVisibility(View.GONE);
       }
       else {
          txtStatus.setText("Signed Out");
@@ -187,6 +208,8 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
          findViewById(R.id.email_password_buttons).setVisibility(View.VISIBLE);
          findViewById(R.id.email_password_fields).setVisibility(View.VISIBLE);
          findViewById(R.id.layout_signed_in_buttons).setVisibility(View.GONE);
+
+         btnforpass.setVisibility(View.VISIBLE);
       }
    }
 
