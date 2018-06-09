@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -20,12 +21,15 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import e.wilso.firebasetutorial.Module.Message;
 import e.wilso.firebasetutorial.Module.User;
 
-public class MessageActivity extends AppCompatActivity {
+public class MessageActivity extends AppCompatActivity implements View.OnClickListener {
 
    private static final String TAG = "MessageActivity";
    private static final String REQUIRED = "Required";
@@ -41,7 +45,10 @@ public class MessageActivity extends AppCompatActivity {
 
    private DatabaseReference mDatabase;
    private DatabaseReference mMessageReference;
-   private ValueEventListener mMessageListener;
+   //private ValueEventListener mMessageListener;
+   private ChildEventListener mMessageListener;
+
+   private ArrayList<Message> messagesList = new ArrayList<>();
 
    Intent intent;
 
@@ -53,21 +60,8 @@ public class MessageActivity extends AppCompatActivity {
       findView();
       initialize();
 
-      btnSend.setOnClickListener(new View.OnClickListener() {
-         @Override
-         public void onClick(View v) {
-            submitMessage();
-            edtSentText.setText("");
-         }
-      });
-
-      btnBack.setOnClickListener(new View.OnClickListener() {
-         @Override
-         public void onClick(View v) {
-            MessageActivity.this.setResult(RESULT_OK, intent);
-            MessageActivity.this.finish();
-         }
-      });
+      btnSend.setOnClickListener(this);
+      btnBack.setOnClickListener(this);
    }
 
    private void findView() {
@@ -83,13 +77,85 @@ public class MessageActivity extends AppCompatActivity {
       mDatabase = FirebaseDatabase.getInstance().getReference();
       mMessageReference = FirebaseDatabase.getInstance().getReference("message");
       user = FirebaseAuth.getInstance().getCurrentUser();
+
+      tvAuthor.setText("");
+      tvTime.setText("");
+      tvBody.setText("");
+   }
+
+   @Override
+   public void onClick(View v) {
+      int i = v.getId();
+
+      if(i == btnSend.getId()) {
+         submitMessage();
+         edtSentText.setText("");
+      }
+      else if(i == btnBack.getId()) {
+         MessageActivity.this.setResult(RESULT_OK, intent);
+         MessageActivity.this.finish();
+      }
    }
 
    @Override
    protected void onStart() {
       super.onStart();
 
-      ValueEventListener messageListener = new ValueEventListener() {
+      ChildEventListener childEventListener = new ChildEventListener() {
+         @Override
+         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+            // A new message has been added
+            // onChildAdded() will be called for each node at the first time
+            Message message = dataSnapshot.getValue(Message.class);
+            messagesList.add(message);
+
+            Log.e(TAG, "onChildAdded:" + message.body);
+
+            Message latest = messagesList.get(messagesList.size() - 1);
+
+            tvAuthor.setText(latest.author);
+            tvBody.setText(latest.body);
+            tvTime.setText(latest.time);
+         }
+
+         @Override
+         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+            Log.e(TAG, "onChildChanged:" + dataSnapshot.getKey());
+
+            // A message has changed
+            Message message = dataSnapshot.getValue(Message.class);
+            Toast.makeText(MessageActivity.this, "onChildChanged: " + message.body, Toast.LENGTH_SHORT).show();
+         }
+
+         @Override
+         public void onChildRemoved(DataSnapshot dataSnapshot) {
+            Log.e(TAG, "onChildRemoved:" + dataSnapshot.getKey());
+
+            // A message has been removed
+            Message message = dataSnapshot.getValue(Message.class);
+            Toast.makeText(MessageActivity.this, "onChildRemoved: " + message.body, Toast.LENGTH_SHORT).show();
+         }
+
+         @Override
+         public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+            Log.e(TAG, "onChildMoved:" + dataSnapshot.getKey());
+
+            // A message has changed position
+            Message message = dataSnapshot.getValue(Message.class);
+            Toast.makeText(MessageActivity.this, "onChildMoved: " + message.body, Toast.LENGTH_SHORT).show();
+         }
+
+         @Override
+         public void onCancelled(DatabaseError databaseError) {
+            Log.e(TAG, "postMessages:onCancelled", databaseError.toException());
+            Toast.makeText(MessageActivity.this, "Failed to load Message.", Toast.LENGTH_SHORT).show();
+         }
+      };
+
+      mMessageReference.addChildEventListener(childEventListener);
+      mMessageListener = childEventListener;
+
+      /*ValueEventListener messageListener = new ValueEventListener() {
          @Override
          public void onDataChange(DataSnapshot dataSnapshot) {
             if(dataSnapshot.exists()) {
@@ -117,7 +183,7 @@ public class MessageActivity extends AppCompatActivity {
       mMessageReference.addValueEventListener(messageListener);
 
       // copy for removing at onStop()
-      mMessageListener = messageListener;
+      mMessageListener = messageListener;*/
    }
 
    @Override
@@ -164,7 +230,17 @@ public class MessageActivity extends AppCompatActivity {
       String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
       Message message = new Message(getUsernameFromEmail(user.getEmail()), body, time);
 
-      mMessageReference.setValue(message);
+      Map<String, Object> messageValues = message.toMap();
+      Map<String, Object> childUpdates = new HashMap<>();
+
+      String key = mDatabase.child("message").push().getKey();
+
+      childUpdates.put("/message/" + key, messageValues);
+      childUpdates.put("/user-messages/" + user.getUid() + "/" + key, messageValues);
+
+      mDatabase.updateChildren(childUpdates);
+
+      //mMessageReference.setValue(message);
    }
 
    private String getUsernameFromEmail(String email) {
