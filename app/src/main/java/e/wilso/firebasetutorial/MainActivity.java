@@ -11,7 +11,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-   String[] item = {"Cloud Messaging", "Authentication", "Realtime Database", "Cloud Storage"};
+   String[] item = {"Cloud Messaging", "Authentication", "Authentication-Google", "Realtime Database", "Cloud Storage"};
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent1);
             break;
          case 2:
-
+            Intent intent2 = new Intent(MainActivity.this, GoogleSigninActivity.class);
+            startActivity(intent2);
             break;
          default:
             break;
