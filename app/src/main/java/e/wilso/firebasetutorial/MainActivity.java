@@ -11,7 +11,9 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
 
-   String[] item = {"Cloud Messaging", "Authentication", "Authentication-Google", "Realtime Database", "Cloud Storage"};
+   String[] item = {"Cloud Messaging", "Authentication", "Authentication - Google", "Realtime Database", "Cloud Storage"};
+
+   boolean basecheck;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -37,13 +39,20 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             break;
          case 1:
+            basecheck = false;
             Intent intent1 = new Intent(MainActivity.this, AuthenticationActivity.class);
+            intent1.putExtra("DATABASE", basecheck);
             startActivity(intent1);
             break;
          case 2:
             Intent intent2 = new Intent(MainActivity.this, GoogleSigninActivity.class);
             startActivity(intent2);
             break;
+         case 3:
+            Intent intent3 = new Intent(MainActivity.this, AuthenticationActivity.class);
+            basecheck = true;
+            intent3.putExtra("DATABASE", basecheck);
+            startActivity(intent3);
          default:
             break;
       }

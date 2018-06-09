@@ -22,6 +22,9 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
+
+import e.wilso.firebasetutorial.Module.User;
 
 public class AuthenticationActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -31,15 +34,20 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
    private TextView txtDetail;
    private EditText edtEmail;
    private EditText edtPassword;
-   private Button btnsignin, btnsignout, btncreateaccount, btnverify, btnforpass;
-   private LinearLayout layout_email_password, layout_emailpass_fields, layout_signin;
+   private Button btnsignin, btnsignout, btncreateaccount, btnverify, btnforpass, btnmessage;
+   private LinearLayout layout_email_password, layout_emailpass_fields, layout_signin, layout_test;
 
    private FirebaseAuth mAuth;
+
+   private boolean basecheck;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.activity_authentication);
+
+      Intent intent = getIntent();
+      basecheck = intent.getBooleanExtra("DATABASE", false);
 
       findView();
 
@@ -55,6 +63,7 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       btncreateaccount.setOnClickListener(this);
       btnverify.setOnClickListener(this);
       btnforpass.setOnClickListener(this);
+      btnmessage.setOnClickListener(this);
 
       mAuth = FirebaseAuth.getInstance();
    }
@@ -75,6 +84,9 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       layout_email_password = findViewById(R.id.email_password_buttons);
       layout_emailpass_fields = findViewById(R.id.email_password_fields);
       layout_signin = findViewById(R.id.layout_signed_in_buttons);
+
+      btnmessage = findViewById(R.id.btn_test_message);
+      layout_test = findViewById(R.id.layout_test_message);
    }
 
    @Override
@@ -95,6 +107,9 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       }
       else if(i == btnforpass.getId()) {
          startActivity(new Intent(AuthenticationActivity.this, ResetPasswordActivity.class));
+      }
+      else if(i == btnmessage.getId()) {
+         testMessage();
       }
       Log.d(TAG, "i: " + i);
    }
@@ -152,6 +167,9 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
                // update UI with the signed-in user's information
                FirebaseUser user = mAuth.getCurrentUser();
                updateUI(user);
+
+               // 把會員資訊寫入Firebase的database
+               writeNewUser(user.getUid(), getUsernameFromEmail(user.getEmail()), user.getEmail());
             }
             else {
                Log.e(TAG, "createAccount: Fail!", task.getException());
@@ -160,6 +178,24 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
             }
          }
       });
+   }
+
+   private void writeNewUser(String userId, String username, String email) {
+      User user = new User(username, email);
+
+      FirebaseDatabase.getInstance().getReference().child("users").child(userId).setValue(user);
+   }
+
+   private String getUsernameFromEmail(String email) {
+      if (email.contains("@")) {
+         // wilson155079@gmail.com => "wilson155079"@"gmail.com"
+         // email.split("@")[0] => wilson155079
+         // email.split("@")[1] => gmail.com
+         return email.split("@")[0];
+      }
+      else {
+         return email;
+      }
    }
 
    private void sendEmailVerification() {
@@ -184,14 +220,16 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       });
    }
 
+   private void testMessage() {
+      startActivity(new Intent(this, MessageActivity.class));
+   }
+
    private void updateUI(FirebaseUser user) {
       if(user != null) {
          txtStatus.setText("User Email" + user.getEmail() + "(verified: " + user.isEmailVerified() + ")");
          txtDetail.setText("Firebase User ID: " + user.getUid());
 
-         //findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
-         //findViewById(R.id.email_password_fields).setVisibility(View.GONE);
-         //findViewById(R.id.layout_signed_in_buttons).setVisibility(View.VISIBLE);
+         //也可以這樣寫 findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
 
          layout_email_password.setVisibility(View.GONE);
          layout_emailpass_fields.setVisibility(View.GONE);
@@ -200,16 +238,20 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
          btnverify.setEnabled(!user.isEmailVerified());
 
          btnforpass.setVisibility(View.GONE);
+
+         if(basecheck) layout_test.setVisibility(View.VISIBLE);
       }
       else {
          txtStatus.setText("Signed Out");
          txtDetail.setText(null);
 
-         findViewById(R.id.email_password_buttons).setVisibility(View.VISIBLE);
-         findViewById(R.id.email_password_fields).setVisibility(View.VISIBLE);
-         findViewById(R.id.layout_signed_in_buttons).setVisibility(View.GONE);
+         layout_email_password.setVisibility(View.VISIBLE);
+         layout_emailpass_fields.setVisibility(View.VISIBLE);
+         layout_signin.setVisibility(View.GONE);
 
          btnforpass.setVisibility(View.VISIBLE);
+
+         layout_test.setVisibility(View.GONE);
       }
    }
 
