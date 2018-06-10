@@ -29,17 +29,14 @@ import e.wilso.firebasetutorial.Module.User;
 public class AuthenticationActivity extends AppCompatActivity implements View.OnClickListener {
 
    private static final String TAG = "FirebaseEmailPassword";
-
    private TextView txtStatus;
    private TextView txtDetail;
    private EditText edtEmail;
    private EditText edtPassword;
-   private Button btnsignin, btnsignout, btncreateaccount, btnverify, btnforpass, btnmessage;
+   private Button btnsignin, btnsignout, btncreateaccount, btnverify, btnforpass, btnmessage, btnstorage;
    private LinearLayout layout_email_password, layout_emailpass_fields, layout_signin, layout_test;
-
    private FirebaseAuth mAuth;
-
-   private boolean basecheck;
+   private boolean baseCheck, storeCheck;
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +44,7 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       setContentView(R.layout.activity_authentication);
 
       Intent intent = getIntent();
-      basecheck = intent.getBooleanExtra("DATABASE", false);
-
+      getBag(intent);
       findView();
 
       //------------------------------
@@ -64,8 +60,15 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       btnverify.setOnClickListener(this);
       btnforpass.setOnClickListener(this);
       btnmessage.setOnClickListener(this);
+      btnstorage.setOnClickListener(this);
 
       mAuth = FirebaseAuth.getInstance();
+   }
+
+   private void getBag(Intent intent) {
+      Bundle bag = intent.getExtras();
+      baseCheck = bag.getBoolean("DATA", false);
+      storeCheck = bag.getBoolean("STORE", false);
    }
 
    private void findView() {
@@ -73,19 +76,16 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       txtDetail = findViewById(R.id.detail);
       edtEmail = findViewById(R.id.edt_email);
       edtPassword = findViewById(R.id.edt_password);
-
       btnsignin = findViewById(R.id.btn_email_sign_in);
       btnsignout = findViewById(R.id.btn_sign_out);
       btncreateaccount = findViewById(R.id.btn_email_create_account);
       btnverify = findViewById(R.id.btn_verify_email);
-
       btnforpass = findViewById(R.id.btn_forgot_password);
-
       layout_email_password = findViewById(R.id.email_password_buttons);
       layout_emailpass_fields = findViewById(R.id.email_password_fields);
       layout_signin = findViewById(R.id.layout_signed_in_buttons);
-
       btnmessage = findViewById(R.id.btn_test_message);
+      btnstorage = findViewById(R.id.btn_test_storage);
       layout_test = findViewById(R.id.layout_test_message);
    }
 
@@ -110,6 +110,9 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       }
       else if(i == btnmessage.getId()) {
          testMessage();
+      }
+      else if(i == btnstorage.getId()) {
+         testStorage();
       }
       Log.d(TAG, "i: " + i);
    }
@@ -220,38 +223,28 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       });
    }
 
-   private void testMessage() {
-      startActivity(new Intent(this, MessageActivity.class));
-   }
-
    private void updateUI(FirebaseUser user) {
       if(user != null) {
          txtStatus.setText("User Email" + user.getEmail() + "(verified: " + user.isEmailVerified() + ")");
          txtDetail.setText("Firebase User ID: " + user.getUid());
-
          //也可以這樣寫 findViewById(R.id.email_password_buttons).setVisibility(View.GONE);
-
          layout_email_password.setVisibility(View.GONE);
          layout_emailpass_fields.setVisibility(View.GONE);
          layout_signin.setVisibility(View.VISIBLE);
-
          btnverify.setEnabled(!user.isEmailVerified());
-
          btnforpass.setVisibility(View.GONE);
-
-         if(basecheck) layout_test.setVisibility(View.VISIBLE);
+         if(baseCheck) btnmessage.setVisibility(View.VISIBLE);
+         if(storeCheck) btnstorage.setVisibility(View.VISIBLE);
       }
       else {
          txtStatus.setText("Signed Out");
          txtDetail.setText(null);
-
          layout_email_password.setVisibility(View.VISIBLE);
          layout_emailpass_fields.setVisibility(View.VISIBLE);
          layout_signin.setVisibility(View.GONE);
-
          btnforpass.setVisibility(View.VISIBLE);
-
-         layout_test.setVisibility(View.GONE);
+         btnmessage.setVisibility(View.GONE);
+         btnstorage.setVisibility(View.GONE);
       }
    }
 
@@ -272,5 +265,13 @@ public class AuthenticationActivity extends AppCompatActivity implements View.On
       }
 
       return true;
+   }
+
+   private void testMessage() {
+      startActivity(new Intent(this, MessageActivity.class));
+   }
+
+   private void testStorage() {
+      startActivity(new Intent(this, StorageActivity.class));
    }
 }

@@ -49,7 +49,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:visibility="gone">
+        android:visibility="visible">
 
         <Button
             android:id="@+id/btn_test_message"
@@ -58,7 +58,18 @@
             android:layout_marginLeft="4dp"
             android:layout_marginRight="4dp"
             android:layout_weight="1"
-            android:text="Test Message" />
+            android:text="Test Message"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btn_test_storage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_weight="1"
+            android:text="Test Storage"
+            android:visibility="gone"/>
     </LinearLayout>
 
     <RelativeLayout

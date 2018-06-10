@@ -12,8 +12,8 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
    String[] item = {"Cloud Messaging", "Authentication", "Authentication - Google", "Realtime Database", "Cloud Storage"};
-
-   boolean basecheck;
+   //boolean baseCheck, storeCheck;
+   Bundle bag = new Bundle();
 
    @Override
    protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
             break;
          case 1:
-            basecheck = false;
             Intent intent1 = new Intent(MainActivity.this, AuthenticationActivity.class);
-            intent1.putExtra("DATABASE", basecheck);
+            putBag(false, false);
+            intent1.putExtras(bag);
             startActivity(intent1);
             break;
          case 2:
@@ -50,11 +50,21 @@ public class MainActivity extends AppCompatActivity {
             break;
          case 3:
             Intent intent3 = new Intent(MainActivity.this, AuthenticationActivity.class);
-            basecheck = true;
-            intent3.putExtra("DATABASE", basecheck);
+            putBag(true, false);
+            intent3.putExtras(bag);
             startActivity(intent3);
+         case 4:
+            Intent intent4 = new Intent(MainActivity.this, AuthenticationActivity.class);
+            putBag(false, true);
+            intent4.putExtras(bag);
+            startActivity(intent4);
          default:
             break;
       }
+   }
+
+   private void putBag(boolean baseCheck, boolean storeCheck) {
+      bag.putBoolean("DATA", baseCheck);
+      bag.putBoolean("STORE", storeCheck);
    }
 }
