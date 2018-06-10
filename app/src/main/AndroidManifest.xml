@@ -30,7 +30,8 @@
         <activity android:name=".AuthenticationActivity" />
         <activity android:name=".ResetPasswordActivity" />
         <activity android:name=".GoogleSigninActivity" />
-        <activity android:name=".MessageActivity"></activity>
+        <activity android:name=".MessageActivity" />
+        <activity android:name=".StorageActivity"></activity>
     </application>
 
 </manifest>
